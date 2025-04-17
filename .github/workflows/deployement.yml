@@ -33,6 +33,6 @@ jobs:
             set ftp:ssl-allow no;
             open ${{ secrets.FTP_SERVER }};
             user ${{ secrets.FTP_USERNAME }} ${{ secrets.FTP_PASSWORD }};
-            mirror -R --parallel=10 --delete ./ ${{ secrets.FTP_PATH }};
+            mirror -R --parallel=10 --delete --exclude node_modules/ ./ ${{ secrets.FTP_PATH }};
             bye
           "
