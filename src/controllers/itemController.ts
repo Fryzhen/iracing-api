@@ -31,6 +31,10 @@ function parseCookies(response: any) {
     }).join(';');
 }
 
+export const handleIndex = async (req: Request, res: Response) => {
+    res.status(200).json("bienvenue sur l'api iracing de fryzhen")
+}
+
 export const handleRequest = (req: Request, res: Response) => {
     console.log(req.path);
     if (isAuthenticated) {
