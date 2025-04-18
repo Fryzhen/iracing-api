@@ -32,7 +32,7 @@ const parseCookies = (response) => {
 app.get('/', (req, res) => {
     res.status(200).json({
         message: "Welcome !",
-        documentation: "https://members-ng.iracing.com/data/doc",
+        documentation: "https://members-login.iracing.com/?ref=https%3A%2F%2Fmembers-ng.iracing.com%2Fdata%2Fdoc&signout=true",
     });
 })
 app.get('/:first/:second', (req, res) => {
