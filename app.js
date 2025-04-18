@@ -1,13 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 
 let isAuthenticated = false;
 let loginCookies;
 
 const auth = async () => {
-    console.log("Authentification en cours ...");
     const password = process.env.ENCODED_PASSWORD;
     const email = process.env.EMAIL;
     await fetch('https://members-ng.iracing.com/auth', {
@@ -15,15 +14,12 @@ const auth = async () => {
         body: JSON.stringify({email: email, password: password}),
         credentials: 'include',
         headers: {'Accept': '*/*', "Content-type": "application/json"}
+    }).then(r => {
+        loginCookies = parseCookies(r);
+        isAuthenticated = true;
     })
-        .then(r => {
-            loginCookies = parseCookies(r);
-            isAuthenticated = true;
-            console.log("Authentication successful");
-        })
 }
 const parseCookies = (response) => {
-    console.log(response.headers);
     const raw = response.headers.get('set-cookie');
     if (!raw) {
         return '';
@@ -65,7 +61,7 @@ app.get('/:first/:second', (req, res) => {
 });
 
 auth().then(() => {
-    app.listen(port, () => console.log(`Listening on port ${port}`));
+    app.listen(port);
 }).catch(error => {
     console.log(error);
 })
