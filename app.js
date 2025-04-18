@@ -33,7 +33,6 @@ app.get('/', (req, res) => {
     res.status(200).json({
         message: "Welcome !",
         documentation: "https://members-ng.iracing.com/data/doc",
-        howToUse: "This domain name must be used like 'https://members-ng.iracing.com/data/' "
     });
 })
 app.get('/:first/:second', (req, res) => {
