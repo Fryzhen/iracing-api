@@ -22,6 +22,7 @@ jobs:
             set ftp:ssl-allow no;
             open ${{ secrets.FTP_SERVER }};
             user ${{ secrets.FTP_USERNAME }} ${{ secrets.FTP_PASSWORD }};
-            mirror -R --parallel=10 --delete ./ ${{ secrets.FTP_PATH }};
+            put -O ${{ secrets.FTP_PATH }} app.js;
+            put -O ${{ secrets.FTP_PATH }} package.json;
             bye
           "
