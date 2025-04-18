@@ -1,7 +1,12 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
+const corsOptions = {
+    origin: 'https://iracing.fryzhen.fr',
+    optionsSuccessStatus: 200
+};
 
 let isAuthenticated = false;
 let loginCookies;
@@ -33,45 +38,36 @@ const parseCookies = (response) => {
     }).join(';');
 }
 
-app.get('/', (req, res) => {
-    res.status(200).json("bienvenue sur l'api iracing de fryzhen")
+app.get('/', cors(corsOptions), (req, res) => {
+    res.status(200).json({
+        message: "Welcome !",
+        documentation: "https://members-ng.iracing.com/data/doc",
+        howToUse: "This domain name must be used like 'https://members-ng.iracing.com/data/' "
+    });
 })
-app.get('/:first/:second', (req, res) => {
-    console.log(req.path);
-    if (isAuthenticated) {
-        let url = "https://members-ng.iracing.com/data" + req.path + "?";
-        for (let key in req.query) {
-            let value = req.query[key];
-            url += key + "=" + value + "&";
+
+app.get('/:first/:second', cors(corsOptions), (req, res) => {
+    fetch("https://members-ng.iracing.com/data" + req.url , {
+        method: 'get', headers: {'Accept': 'application/json', 'cookie': loginCookies}, cache: "no-store"
+    }).then((response) => {
+        if (response.status >= 404) {
+            throw "Not Found";
         }
-        console.log(url);
-        fetch(url, {
-            method: 'get', headers: {'Accept': 'application/json', 'cookie': loginCookies}, cache: "no-store"
-        }).then((response) => {
-            if (response.status >= 404) {
-                throw "Not Found";
-            }
-            else if (response.status >= 400) {
-                throw response.statusText;
-            }
-            response.json().then(data => {
-                fetch(data.link).then((response) => {
-                    response.json().then((data) => {
-                        res.status(200).json(data);
-                    })
-                }).catch(error => {
-                    res.status(500).json(error);
+        else if (response.status >= 400) {
+            throw response.statusText;
+        }
+        response.json().then(data => {
+            fetch(data.link).then((response) => {
+                response.json().then((data) => {
+                    res.status(200).json(data);
                 })
+            }).catch(error => {
+                res.status(500).json(error);
             })
-        }).catch(error => {
-            res.status(500).json(error);
         })
-    }
-    else {
-        auth().then(() => {
-            handleRequest(req, res)
-        })
-    }
+    }).catch(error => {
+        res.status(500).json(error);
+    })
 });
 
 auth().then(() => {
