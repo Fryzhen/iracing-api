@@ -1,7 +1,10 @@
-import {Request, Response} from 'express';
+require('dotenv').config();
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
 
 let isAuthenticated = false;
-let loginCookies: any;
+let loginCookies;
 
 const auth = async () => {
     console.log("Authentification en cours ...");
@@ -13,29 +16,27 @@ const auth = async () => {
         credentials: 'include',
         headers: {'Accept': '*/*', "Content-type": "application/json"}
     })
-    .then(r => {
-        loginCookies = parseCookies(r);
-        isAuthenticated = true;
-        console.log("Authentication successful");
-    })
+        .then(r => {
+            loginCookies = parseCookies(r);
+            isAuthenticated = true;
+            console.log("Authentication successful");
+        })
 }
-
-function parseCookies(response: any) {
+const parseCookies = (response) => {
     console.log(response.headers);
     const raw = response.headers.get('set-cookie'); // Fetch API does not support multiple 'set-cookie' headers directly
     if (!raw) {
         return '';
     }
-    return raw.split(',').map((entry: string) => {
+    return raw.split(',').map((entry) => {
         return entry.split(';')[0];
     }).join(';');
 }
 
-export const handleIndex = async (req: Request, res: Response) => {
+app.get('/', (req, res) => {
     res.status(200).json("bienvenue sur l'api iracing de fryzhen")
-}
-
-export const handleRequest = (req: Request, res: Response) => {
+})
+app.get('/:first/:second', (req, res) => {
     console.log(req.path);
     if (isAuthenticated) {
         let url = "https://members-ng.iracing.com/data" + req.path + "?";
@@ -45,13 +46,12 @@ export const handleRequest = (req: Request, res: Response) => {
         }
         console.log(url);
         fetch(url, {
-            method: 'get',
-            headers: {'Accept': 'application/json', 'cookie': loginCookies},
-            cache: "no-store"
+            method: 'get', headers: {'Accept': 'application/json', 'cookie': loginCookies}, cache: "no-store"
         }).then((response) => {
             if (response.status >= 404) {
                 throw "Not Found";
-            } else if (response.status >= 400) {
+            }
+            else if (response.status >= 400) {
                 throw response.statusText;
             }
             response.json().then(data => {
@@ -66,9 +66,16 @@ export const handleRequest = (req: Request, res: Response) => {
         }).catch(error => {
             res.status(500).json(error);
         })
-    } else {
+    }
+    else {
         auth().then(() => {
             handleRequest(req, res)
         })
     }
-};
+});
+
+auth().then(() => {
+    app.listen(port, () => console.log(`Listening on port ${port}`));
+}).catch(error => {
+    console.log(error);
+})
