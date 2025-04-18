@@ -1,12 +1,7 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
-const corsOptions = {
-    origin: 'https://iracing.fryzhen.fr',
-    optionsSuccessStatus: 200
-};
 
 let isAuthenticated = false;
 let loginCookies;
@@ -29,7 +24,7 @@ const auth = async () => {
 }
 const parseCookies = (response) => {
     console.log(response.headers);
-    const raw = response.headers.get('set-cookie'); // Fetch API does not support multiple 'set-cookie' headers directly
+    const raw = response.headers.get('set-cookie');
     if (!raw) {
         return '';
     }
@@ -38,16 +33,15 @@ const parseCookies = (response) => {
     }).join(';');
 }
 
-app.get('/', cors(corsOptions), (req, res) => {
+app.get('/', (req, res) => {
     res.status(200).json({
         message: "Welcome !",
         documentation: "https://members-ng.iracing.com/data/doc",
         howToUse: "This domain name must be used like 'https://members-ng.iracing.com/data/' "
     });
 })
-
-app.get('/:first/:second', cors(corsOptions), (req, res) => {
-    fetch("https://members-ng.iracing.com/data" + req.url , {
+app.get('/:first/:second', (req, res) => {
+    fetch("https://members-ng.iracing.com/data" + req.url, {
         method: 'get', headers: {'Accept': 'application/json', 'cookie': loginCookies}, cache: "no-store"
     }).then((response) => {
         if (response.status >= 404) {
