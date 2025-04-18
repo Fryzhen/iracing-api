@@ -30,10 +30,22 @@ const parseCookies = (response) => {
 }
 
 app.get('/', (req, res) => {
-    res.status(200).json({
-        message: "Welcome !",
-        documentation: "https://members-login.iracing.com/?ref=https%3A%2F%2Fmembers-ng.iracing.com%2Fdata%2Fdoc&signout=true",
-    });
+    fetch('https://members-ng.iracing.com/data/doc', {
+        method: 'get', headers: {'Accept': 'application/json', 'cookie': loginCookies}, cache: "no-store"
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        console.log(data);
+        for (let first in data) {
+            for (let second in data[first]) {
+                data[first][second]['link'] = data[first][second]['link'].replace('https://members-ng.iracing.com/data/', 'http://api.iracing.fryzhen.fr/')
+            }
+        }
+        res.status(200).json({
+            message: "Welcome !",
+            documentation: data,
+        });
+    })
 })
 app.get('/:first/:second', (req, res) => {
     fetch("https://members-ng.iracing.com/data" + req.url, {
@@ -60,6 +72,7 @@ app.get('/:first/:second', (req, res) => {
 });
 
 auth().then(() => {
+    console.log("Application démmarée sur le port : " + port);
     app.listen(port);
 }).catch(error => {
     console.log(error);
