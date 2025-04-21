@@ -16,6 +16,7 @@ const auth = async () => {
         headers: {'Accept': '*/*', "Content-type": "application/json"}
     }).then(r => {
         loginCookies = parseCookies(r);
+        console.log("Authenticated with cookies: " + loginCookies);
         isAuthenticated = true;
     })
 }
@@ -48,6 +49,7 @@ app.get('/', (req, res) => {
     })
 })
 app.get('/:first/:second', (req, res) => {
+    console.log(req.url + " => " + "https://members-ng.iracing.com/data" + req.url);
     fetch("https://members-ng.iracing.com/data" + req.url, {
         method: 'get', headers: {'Accept': 'application/json', 'cookie': loginCookies}, cache: "no-store"
     }).then((response) => {
@@ -60,13 +62,16 @@ app.get('/:first/:second', (req, res) => {
         response.json().then(data => {
             fetch(data.link).then((response) => {
                 response.json().then((data) => {
+                    res.setHeader('Access-Control-Allow-Origin', '*');
                     res.status(200).json(data);
                 })
             }).catch(error => {
+                console.error("2", error);
                 res.status(500).json(error);
             })
         })
     }).catch(error => {
+        console.error("1", error);
         res.status(500).json(error);
     })
 });
@@ -74,6 +79,13 @@ app.get('/:first/:second', (req, res) => {
 auth().then(() => {
     console.log("Application démmarée sur le port : " + port);
     app.listen(port);
+
+    // Lancer auth toutes les heures (3600000 ms)
+    setInterval(() => {
+        auth().catch(error => {
+            console.error("Erreur lors de l'exécution de auth :", error);
+        });
+    }, 3600000);
 }).catch(error => {
     console.log(error);
 })
