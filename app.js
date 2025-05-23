@@ -36,7 +36,6 @@ app.get('/', (req, res) => {
     })
     .then((response) => response.json())
     .then((data) => {
-        console.log(data);
         for (let first in data) {
             for (let second in data[first]) {
                 data[first][second]['link'] = data[first][second]['link'].replace('https://members-ng.iracing.com/data/', 'http://api.iracing.fryzhen.fr/')
@@ -51,7 +50,10 @@ app.get('/', (req, res) => {
 app.get('/:first/:second', (req, res) => {
     console.log(req.url + " => " + "https://members-ng.iracing.com/data" + req.url);
     fetch("https://members-ng.iracing.com/data" + req.url, {
-        method: 'get', headers: {'Accept': 'application/json', 'cookie': loginCookies}, cache: "no-store"
+        method: 'get',
+        headers: {'Accept': 'application/json', 'cookie': loginCookies},
+        cache: "no-store",
+        body: req.body
     }).then((response) => {
         if (response.status >= 404) {
             throw "Not Found";
@@ -60,15 +62,20 @@ app.get('/:first/:second', (req, res) => {
             throw response.statusText;
         }
         response.json().then(data => {
-            fetch(data.link).then((response) => {
-                response.json().then((data) => {
-                    res.setHeader('Access-Control-Allow-Origin', '*');
-                    res.status(200).json(data);
+            if (data.link || data.data_url) {
+                fetch(data.link ?? data.data_url).then((response) => {
+                    response.json().then((data) => {
+                        res.setHeader('Access-Control-Allow-Origin', '*');
+                        res.status(200).json(data);
+                    })
+                }).catch(error => {
+                    console.error("2", error);
+                    res.status(500).json(error);
                 })
-            }).catch(error => {
-                console.error("2", error);
-                res.status(500).json(error);
-            })
+            } else {
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                res.status(200).json(data);
+            }
         })
     }).catch(error => {
         console.error("1", error);
@@ -82,7 +89,9 @@ auth().then(() => {
 
     // Lancer auth toutes les heures (3600000 ms)
     setInterval(() => {
-        auth().catch(error => {
+        auth().then(() => {
+            console.log("Réauthentification réussie");
+        }).catch(error => {
             console.error("Erreur lors de l'exécution de auth :", error);
         });
     }, 3600000);
