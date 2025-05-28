@@ -30,13 +30,15 @@ const parseCookies = (response) => {
         return entry.split(';')[0];
     }).join(';');
 }
-app.use(cors());
+const corsOptions = {
+    origin: ['https://iracing.fryzhen.fr'], // or '*', but more secure to restrict
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    next();
-});
 
 app.get('/', (req, res) => {
     fetch('https://members-ng.iracing.com/data/doc', {
