@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const port = 3000;
 
@@ -29,6 +30,13 @@ const parseCookies = (response) => {
         return entry.split(';')[0];
     }).join(';');
 }
+app.use(cors());
+
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
 
 app.get('/', (req, res) => {
     fetch('https://members-ng.iracing.com/data/doc', {
@@ -47,6 +55,7 @@ app.get('/', (req, res) => {
         });
     })
 })
+
 app.get('/:first/:second', (req, res) => {
     console.log(req.url + " => " + "https://members-ng.iracing.com/data" + req.url);
     fetch("https://members-ng.iracing.com/data" + req.url, {
@@ -94,7 +103,7 @@ auth().then(() => {
         }).catch(error => {
             console.error("Erreur lors de l'exécution de auth :", error);
         });
-    }, 3600000);
+    }, 3000000);
 }).catch(error => {
     console.log(error);
 })
