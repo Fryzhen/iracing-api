@@ -80,7 +80,7 @@ app.get('/:first/:second', (req, res) => {
                         res.status(200).json(data);
                     })
                 }).catch(error => {
-                    console.error("2", error);
+                    res.setHeader('Access-Control-Allow-Origin', '*');
                     res.status(500).json(error);
                 })
             } else {
@@ -89,7 +89,7 @@ app.get('/:first/:second', (req, res) => {
             }
         })
     }).catch(error => {
-        console.error("1", error);
+        res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(500).json(error);
     })
 });
