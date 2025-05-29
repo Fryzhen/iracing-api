@@ -33,8 +33,7 @@ const parseCookies = (response) => {
 app.use(cors());
 
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Origin', 'https://iracing.fryzhen.fr');
     next();
 });
 
@@ -74,20 +73,16 @@ app.get('/:first/:second', (req, res) => {
             if (data.link || data.data_url) {
                 fetch(data.link ?? data.data_url).then((response) => {
                     response.json().then((data) => {
-                        res.setHeader('Access-Control-Allow-Origin', '*');
                         res.status(200).json(data);
                     })
                 }).catch(error => {
-                    res.setHeader('Access-Control-Allow-Origin', '*');
                     res.status(500).json(error);
                 })
             } else {
-                res.setHeader('Access-Control-Allow-Origin', '*');
                 res.status(200).json(data);
             }
         })
     }).catch(error => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(500).json(error);
     })
 });
