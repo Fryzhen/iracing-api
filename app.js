@@ -30,6 +30,7 @@ const parseCookies = (response) => {
         return entry.split(';')[0];
     }).join(';');
 }
+const chunkRoutes = ["search_series_results"]
 app.use(cors());
 
 app.use((req, res, next) => {
@@ -78,7 +79,16 @@ app.get('/:first/:second', (req, res) => {
                 }).catch(error => {
                     res.status(500).json(error);
                 })
-            } else {
+            } else if (chunkRoutes.includes(data.type)) {
+                const fetches = data.data.chunk_info.chunk_file_names.map((fileName) => {
+                    return fetch(data.data.chunk_info.base_download_url + fileName)
+                        .then((response) => response.json());
+                });
+                Promise.all(fetches).then((allRows) => {
+                    res.status(200).json(allRows.flat());
+                });
+            }
+            else {
                 res.status(200).json(data);
             }
         })
